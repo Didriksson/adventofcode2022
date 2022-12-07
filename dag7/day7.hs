@@ -21,9 +21,9 @@ parsePath currentpath path =
 handleCommand [] result currentPath = result
 handleCommand (command:rest) result currentPath =
     case (words . tail) command of
-                        ("cd":xs) -> handleCommand rest (result) (parsePath currentPath (concat xs))
+                        ("cd":xs) -> handleCommand rest result (parsePath currentPath (concat xs))
                         ("ls":xs) -> handleCommand (dropWhile (not . isCommand) rest) (result ++ [(currentPath, (takeWhile (not . isCommand) rest))]) currentPath
-                        otherwise -> handleCommand rest result currentPath
+                        _ -> handleCommand rest result currentPath
 
 
 toNumberForDirectory content = map read $ filter (/= "") $ map (takeWhile isNumber) content :: [Int]
@@ -38,8 +38,13 @@ main :: IO ()
 main = do
     ls <- fmap lines (readFile "input.txt")
     let filetree = handleCommand ls [] ""
+        directoryTree = map (snd . ((\d -> ( d, sum . concat $ sumForDirectory d filetree)) . fst)) filetree
+        discspace = 70000000
+        unused = 70000000 - maximum directoryTree
+        requiredUnused = 30000000
         in do
-            print $ sum $ filter (<100000) $ map (snd . ((\d -> ( d, sum . concat $ sumForDirectory d filetree)) . fst)) filetree
+            print $ sum $ filter (<100000) directoryTree
+            print $ minimum (filter (\ s -> unused + s > requiredUnused) directoryTree)
 
 
 
