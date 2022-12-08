@@ -6,18 +6,22 @@ import Data.Char
 data Command = Cd | Ls | UnExpectedValue String
     deriving (Show)
 
+isCommand :: [Char] -> Bool
 isCommand ('$':xs) = True
 isCommand _ = False
 
 
+goUpInPath :: [Char] -> [Char]
 goUpInPath currentPath = reverse . drop 1 . dropWhile (/= '/') $ reverse currentPath
 
+parsePath :: [Char] -> [Char] -> [Char]
 parsePath currentpath path =
     case path of
         ".." -> goUpInPath currentpath
         "/" -> "/"
         _ -> currentpath ++ "/" ++ path
 
+handleCommand :: [[Char]] -> [([Char], [[Char]])] -> [Char] -> [([Char], [[Char]])]
 handleCommand [] result currentPath = result
 handleCommand (command:rest) result currentPath =
     case (words . tail) command of
@@ -26,11 +30,14 @@ handleCommand (command:rest) result currentPath =
                         _ -> handleCommand rest result currentPath
 
 
+toNumberForDirectory :: [[Char]] -> [Int]
 toNumberForDirectory content = map read $ filter (/= "") $ map (takeWhile isNumber) content :: [Int]
 
+filesForDirectory :: Eq a => [a] -> [([a], b)] -> [b]
 filesForDirectory d directories = map snd affectedDirectries
     where affectedDirectries = filter (isInfixOf  d . fst) directories
 
+sumForDirectory :: Eq a => [a] -> [([a], [[Char]])] -> [[Int]]
 sumForDirectory d directories =
     map toNumberForDirectory $ filesForDirectory d directories
 
