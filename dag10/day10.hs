@@ -82,7 +82,6 @@ main :: IO ()
 main = do
     ls <- fmap lines (readFile "input.txt")
     let program = Program 1 [] (map parseInstruction ls) 0
-        result = runAllCycles program []
-        in do
-            print $ sum $ map (\p -> fst p * snd p) $ filter (\f -> fst f `elem` [20, 60, 100, 140, 180, 220]) $ zip [1..] result
-            mapM_ print $ getCRTOutput result
+    let result = runAllCycles program []
+    print $ sum $ map (\p -> fst p * snd p) $ filter (\f -> fst f `elem` [20, 60, 100, 140, 180, 220]) $ zip [1..] result
+    mapM_ print $ getCRTOutput result
