@@ -30,6 +30,11 @@ findStartPosition grid =
     in
         (x,y)
 
+findAllLowestPointPositions :: Grid -> [(Int,Int)]
+findAllLowestPointPositions grid = map snd $ filter (\c -> fst c == 'a') $ map (\c -> (checklocationChar grid c, c)) allcords
+    where allcords = [ (x,y) | x <- [0..length (head grid)-1], y <- [0..length grid -1]]
+
+
 isChickenDinner :: Grid -> (Int, Int) -> Bool
 isChickenDinner grid position = checklocationChar grid position == goal
 
@@ -39,8 +44,8 @@ inBounds grid (x, y) =
     where boundY = length grid
           boundX = length $ head grid
 
-getPotentialMoves :: Grid -> Node -> [Node]
-getPotentialMoves grid (Node (x,y) visited) =
+getPotentialMoves :: Grid -> [(Int, Int)] -> Node -> [Node]
+getPotentialMoves grid visited (Node (x,y) _)=
     let potential = filter (inBounds grid) [(x - 1, y), (x, y-1), (x+1, y), (x, y+1)]
         notVisited = filter (`notElem` visited) potential
         withinHeight = filter (\p -> checkLocationHeight grid (x,y) + 1 >= checkLocationHeight grid p) notVisited
@@ -58,18 +63,20 @@ reachedEnd grid (Node current visitednodes) =
 loop :: Grid -> [Node] -> Int
 loop grid nodes =
     let
+        visitedpositions = concatMap visited nodes
         foundGoal = find (reachedEnd grid) nodes
-        potential =  concatMap (getPotentialMoves grid) nodes
+        potential = concatMap (\n -> getPotentialMoves grid (visited n) n) nodes
     in
         case foundGoal of
             Just v -> length (visited v)
-            Nothing -> loop grid potential
+            Nothing -> loop grid $ nubBy (\n1 n2 -> currentPosition n1 == currentPosition n2) potential
 
 main :: IO ()
 main = do
     ls <- fmap lines (readFile "input.txt")
     let
         startPosition = findStartPosition ls
-        initNode = Node startPosition [startPosition]
-        result = loop ls [initNode]
+        initNodeA = Node startPosition [startPosition]
+        initNodesB = map (\p -> Node p [p]) $ findAllLowestPointPositions ls
+        result = loop ls initNodesB
     print $ result
