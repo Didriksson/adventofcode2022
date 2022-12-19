@@ -57,6 +57,15 @@ createBoundBox paths = Board (minimum xs) (minimum ys) (maximum xs) (maximum ys)
 
 expandPaths p = map (\(c1:c2:_) -> expandRange c1 c2) $ divvy 2 1 p
 
+dropSand (Cave rocks sand box) =
+   let pos = last takeWhile (\f -> f `elem` occupiedPositions) dropCoordinates
+    
+
+  where 
+    sandDropPosition = (500,0)
+    occupiedPositions = rocks ++ sand
+    maxY = maxY box
+    dropCoordinates = [(x,y) | x <- [500], y <- [(snd sandDropPosition)..maxY]]
 
 main :: IO ()
 main = do
